@@ -55,6 +55,7 @@ class JsonTable(object):
         self.csv_deliminator = csv_deliminator or self.csv_deliminator
         with open(filename, 'r') as fn:
             self.csv_data = csv.reader(fn, delimiter=self.csv_deliminator)
+        fn.close()
         self.load_csv_data(self.csv_data, path_deliminator=path_deliminator, csv_deliminator=csv_deliminator)
 
     def load_csv_data(self, csv_data, path_deliminator=None, csv_deliminator=None):
@@ -80,6 +81,7 @@ class JsonTable(object):
         """
         with open(filename, 'r') as fn:
             self.json_data = simplejson.load(fn.read())
+        fn.close()
         self.load_json_data(self.json_data, path_deliminator=path_deliminator, csv_deliminator=csv_deliminator)
 
     def load_json_data(self, json_data, path_deliminator=None, csv_deliminator=None):
@@ -97,9 +99,31 @@ class JsonTable(object):
             self.csv_data = self.flatten_json(self.json_data, self.path_deliminator)
         return self.json_data
 
+    def save_csv_file(self,filename,csv_data=None, csv_deliminator=None):
+        """
+        :param filename:
+        :param csv_data:
+        :param csv_deliminator:
+        :return:
+        """
+        csv_data = csv_data or self.csv_data
+        csv_deliminator = csv_deliminator or self.csv_deliminator
+        with open(filename,'w') as fn:
+            csv.writer(fn).writerows(csv_data,delimiter=csv_deliminator)
+        fn.close()
+
+    def save_json_file(self,filename,json_data=None):
+        """
+        :param filename:
+        :param json_data:
+        :return:
+        """
+        json_data = json_data or self.json_data
+        with open(filename,'w') as fn:
+            fn.write(simplejson.dump(json_data))
+
     def flatten_json(self, obj, path_deliminator=None):
         """
-
         :param obj:
         :param path_deliminator:
         :return:
