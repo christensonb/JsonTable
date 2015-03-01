@@ -55,9 +55,9 @@ class JsonTable(object):
         self.csv_deliminator = csv_deliminator or self.csv_deliminator
         with open(filename, 'r') as fn:
             self.csv_data = csv.reader(fn, delimiter=self.csv_deliminator)
-        self.load_csv_data(self.csv_data,path_deliminator=path_deliminator,csv_deliminator=csv_deliminator)
+        self.load_csv_data(self.csv_data, path_deliminator=path_deliminator, csv_deliminator=csv_deliminator)
 
-    def load_csv_data(self,csv_data,path_deliminator=None, csv_deliminator=None):
+    def load_csv_data(self, csv_data, path_deliminator=None, csv_deliminator=None):
         """
         :param csv_data:
         :param path_deliminator:
@@ -80,9 +80,9 @@ class JsonTable(object):
         """
         with open(filename, 'r') as fn:
             self.json_data = simplejson.load(fn.read())
-        self.load_json_data(self.json_data,path_deliminator=path_deliminator,csv_deliminator=csv_deliminator)
+        self.load_json_data(self.json_data, path_deliminator=path_deliminator, csv_deliminator=csv_deliminator)
 
-    def load_json_data(self,json_data,path_deliminator=None,csv_deliminator=None):
+    def load_json_data(self, json_data, path_deliminator=None, csv_deliminator=None):
         """
         :param json_data:
         :param path_deliminator:
@@ -255,7 +255,7 @@ class JsonTable(object):
                 data.append([list_label] + _data)
             else:
                 cols += [c for c in _col if c not in cols]
-                for d in data: # noinspection PyUnusedLocal
+                for d in data:  # noinspection PyUnusedLocal
                     d += [None] * (len(cols) - len(d))
                 data.append([list_label] + [c in _col and _data[_col.index(c) or None] for c in cols[1:]])
         return cols, data
@@ -280,6 +280,77 @@ class JsonTable(object):
         self._list_label.setdefault(path, -1)
         self._list_label[path] += 1
         return '%s_%s_%s' % (self._list_head, len(self._list_label), self._list_label[path])
+
+    def merge_csv(self, new_csv_data, col_ids=None, col_map=None):
+        """
+        This will add the keys based on common ids in col_ids
+        If the same column is in both the new and old data then the column
+        will be added with the '_' prefix, unless the data is the same
+        :param new_csv_data:
+        :param col_id: dict of new_csv col ids to old_csv col ids
+        :param col_map:
+        :return:
+        """
+        col_map = col_map or self.col_map
+        old_csv_data = self.csv_data
+        new_header = new_csv_data[0]
+        old_header = old_csv_data[0]
+
+        for col in new_header:
+            old_col = col_map.get(col,col)
+            if old_col not in old_header:
+                old_header.append(old_col)
+            else:
+                old_header.append('_'+old_col)
+                col_map[col] = '_'+old_col
+
+        for row in old_csv_data[1:]:
+            row += [None] * (len(old_header) - len(row))
+
+        filter_indexes = dict([(k,new_header.index(k)) for k in col_ids])
+        transfer_indexes = dict([(new_header.index(k),old_header.index(col_map.get(k,k))) for k in new_header])
+        while len(new_csv_data) > 1: # data other than header
+            new_row = new_csv_data[-1]
+
+            new_filter = OrderedDict([(col_ids[k], new_row[filter_indexes[k]]) for k in col_ids])
+            old_filter = OrderedDict([(k, new_row[filter_indexes[k]]) for k in col_ids])
+
+            old_filtered_data = self.get_filtered_data(data_filter=old_filter,header=old_header,data=self.csv_data)
+            new_filtered_data = self.get_filtered_data(data_filter=new_filter,header=new_header,data=new_csv_data)
+
+            if not old_filtered_data:
+                for new_row in new_filtered_data:
+                    row = [None] * (len(new_header) - len(new_row))+new_row
+                    for k in new_filter:
+                        row[old_header.index(k)] = new_filter[k]
+                    old_csv_data.append(row)
+
+            elif len(new_filtered_data) == 1: # then it can work in place for speed
+                for old_row in old_filtered_data:
+                    for old_i,new_i in transfer_indexes.items():
+                        old_row[old_i] = new_row[new_i]
+
+            else:
+                for old_row in old_filtered_data:
+                    old_csv_data.remove(old_row)
+                    for new_row in new_filtered_data:
+                        copied_row = old_row.copy()
+                        for old_i,new_i in transfer_indexes.items():
+                            copied_row[old_i] = new_row[new_i]
+                        old_csv_data.append(copied_row)
+
+            for new_row in new_filtered_data:
+                new_csv_data.remove(new_row)
+
+        data = new_csv_data[1:]
+        data.sort()
+        self.csv_data = [old_header] + data
+        self.json_data = self.unflatten_csv(self.csv_data, self.path_deliminator)
+
+    def merge_data(self, new_json_data, col_ids=None, path_deliminator=None):
+        path_deliminator = path_deliminator or self.path_deliminator
+        new_csv_data = self.flatten_json(new_json_data, path_deliminator=path_deliminator)
+        self.merge_csv(new_csv_data, col_ids=col_ids)
 
     def get_column(self, column_name):
         """
@@ -328,7 +399,7 @@ class JsonTable(object):
                 row[k] = sub.join_str.join(sub_template(text=sub.text, col_map=col_map, data_filter=data_filter))
             ret.append(text.format(**row))
         return ret
-    
+
     @staticmethod
     def get_template_keywords(text):
         """
@@ -359,7 +430,8 @@ class JsonTable(object):
         :param csv_data: 
         :return:
         """
-        data = self.get_value_set(keys=keys, data_filter=data_filter, col_map=col_map, only_unique=only_unique, csv_data=csv_data)
+        data = self.get_value_set(keys=keys, data_filter=data_filter, col_map=col_map, only_unique=only_unique,
+                                  csv_data=csv_data)
         return [OrderedDict([(keys[i], row[i]) for i in range(len(row))]) for row in data]
 
     def get_value_set(self, keys, data_filter=None, col_map=None, only_unique=True, csv_data=None):
@@ -375,14 +447,15 @@ class JsonTable(object):
         header = csv_data[0]
         indexes = [header.index(col_map.get(k, k)) for k in keys]
 
-        data_filtered_data = self.data_filter_data(data_filter=data_filter, header=header, data=csv_data[1:], col_map=col_map)
-        for row in data_filtered_data:
+        filtered_data = self.get_filtered_data(data_filter=data_filter, header=header, data=csv_data[1:],
+                                                   col_map=col_map)
+        for row in filtered_data:
             reduced_row = [row[i] for i in indexes]
             if only_unique == False or (reduced_row != ret[-1] and reduced_row not in ret[:-1]):
                 ret.append(reduced_row)
         return ret
 
-    def data_filter_data(self, data_filter=None, header=None, data=None, col_map=None):
+    def get_filtered_data(self, data_filter=None, header=None, data=None, col_map=None):
         """
         This will data_filter the data and return only the columns that match the data_filter
         :param data_filter:
@@ -401,12 +474,12 @@ class JsonTable(object):
                 ret.append(row)
         return ret
 
-    def get_empty_json_structure(self,value=None):
+    def get_empty_json_structure(self, value=None):
         """
         :param value: obj of the value to put in the data structure
         :return: obj of the data structure without data
         """
-        return self.unflatten_csv([self.csv_data[0],[value]*len(self.csv_data[0])])
+        return self.unflatten_csv([self.csv_data[0], [value] * len(self.csv_data[0])])
 
     def __str__(self):
         """
