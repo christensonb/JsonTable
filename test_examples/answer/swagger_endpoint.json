@@ -1,0 +1,130 @@
+{
+  "path": "/aaa/authenticate",
+  "operations": [
+    {
+      "method": "POST",
+      "summary": "Login Step 1: Authenticate with user credentials",
+      "notes": "\"Login is a 2 step process:  Authenticate",
+      "nickname": " then Authorize with the token returned by Authenticate.\"",
+      "type": "authenticate",
+      "parameters": [
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "password",
+          "required": "Password",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "password",
+          "required": "Password",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "password",
+          "required": "Password",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "password",
+          "required": "Password",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "password",
+          "required": "Password",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "password",
+          "required": "Password",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "password",
+          "required": "Password",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "password",
+          "required": "Password",
+          "type": true,
+          "paramType": "string"
+        }
+      ],
+      "responseMessages": {
+        "code": "LIST_2_0",
+        "message": 400
+      }
+    }
+  ]
+}
