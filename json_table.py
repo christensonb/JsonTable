@@ -16,6 +16,11 @@
 
     Note, Json is a string that can, within constraints, be converted to a python dictionary / list combination.
     For this module the term json_data stands for the python object
+
+    Limitations:
+        values of None or '' will be removed in the process of converting from Json to CSV and back again
+        collections cannot contain themselves or it will cause a stack overflow
+        True and False will be converted to 1 and 0
 """
 
 __author__ = "Ben Christenson"
@@ -25,6 +30,7 @@ import csv
 import simplejson
 from collections import OrderedDict
 import os
+
 
 class JsonTable(object):
     _list_head = 'LIST'
@@ -108,9 +114,15 @@ class JsonTable(object):
         """
         self.csv_deliminator = csv_deliminator or self.csv_deliminator
         with open(filename, 'r') as fn:
-            self.csv_data = [row for row in csv.reader(fn, delimiter=self.csv_deliminator)]
+            self.csv_data = [row for row in
+                             csv.reader(fn, delimiter=self.csv_deliminator, quoting=csv.QUOTE_NONNUMERIC)]
 
-        # print 'load_csv_file '+filename+'\n'+self.str_list_of_list(self.csv_data)
+        for row in self.csv_data:
+            for i in range(len(row)):
+                if isinstance(row[i], float) and row[i] == int(row[i]):
+                    row[i] = int(row[i])
+
+        print 'load_csv_file ' + filename + '\n' + self.str_list_of_list(self.csv_data)
         self.load_csv_data(self.csv_data, path_deliminator=path_deliminator, csv_deliminator=csv_deliminator)
 
     def load_csv_data(self, csv_data, path_deliminator=None, csv_deliminator=None):
@@ -162,6 +174,7 @@ class JsonTable(object):
         assert (self.csv_deliminator != self.path_deliminator)
         self.json_data = json_data
         if self.json_data:
+            self.json_data = self.normalize_data(self.json_data)
             self.csv_data = self.flatten_json(self.json_data, self.path_deliminator)
         return self.json_data
 
@@ -177,11 +190,11 @@ class JsonTable(object):
         # print self.str_list_of_list(csv_data)
         csv_data = csv_data or self.get_value_set(keys=keys, col_map=col_map)
         # print 'csv_data'
-        # print self.str_list_of_list(csv_data)
+        print self.str_list_of_list(csv_data)
         with open(filename, 'w') as fn:
-            csv.writer(fn, delimiter=csv_deliminator).writerows(csv_data)
+            csv.writer(fn, delimiter=csv_deliminator, quoting=csv.QUOTE_NONNUMERIC).writerows(csv_data)
 
-    def save_json_file(self, filename, json_data=None,indent=2):
+    def save_json_file(self, filename, json_data=None, indent=2):
         """
         :param filename:
         :param json_data:
@@ -189,7 +202,7 @@ class JsonTable(object):
         """
         json_data = json_data or self.json_data
         with open(filename, 'w') as fn:
-            fn.write(simplejson.dumps(json_data,indent=indent))
+            fn.write(simplejson.dumps(json_data, indent=indent))
 
     def flatten_json(self, obj, path_deliminator=None):
         """
@@ -200,7 +213,7 @@ class JsonTable(object):
         self.path_deliminator = path_deliminator or self.path_deliminator
         header, data = self._flatten(obj=obj, level=0, path='')
         self.csv_data = [header] + data
-        print 'Done flatten Json','\n', self.str_list_of_list(self.csv_data),'\n'
+        print 'Done flatten Json', '\n', self.str_list_of_list(self.csv_data), '\n'
         return self.csv_data
 
     def unflatten_csv(self, data, path_deliminator=None):
@@ -213,15 +226,16 @@ class JsonTable(object):
         self._list_label.clear()
 
         header = data[0]
-        if header[0].startswith(self._list_head):
+        if header[0].startswith(self._list_postfix):
             ret, row, col = self._unflatten_list(header, data, row=1, col=0, path='')
         elif len(header) == 1 and header[0] == '' and len(data) == 2:
             ret, row = data[1][0], 1
         else:
             ret, row, col = self._unflatten_dict(header, data, row=1, col=0, path='')
 
-        print 'Done unflattening CSV','\n', str(ret),'\n'
-        assert (row+1 == len(data))
+        print 'Done unflattening CSV', '\n', str(ret), '\n'
+        assert (row + 1 == len(data))
+        ret = self.remove_none(ret)
         return ret
 
     def _unflatten_dict(self, header, data, row, col, path):
@@ -235,34 +249,39 @@ class JsonTable(object):
         if path.startswith(self.path_deliminator):
             path = path.split(self.path_deliminator, 1)[-1]
         print 'Unflatten_Dict', 'path = "%s"' % path, 'row = ', row, 'col = ', col, '\n', str(
-            self.str_list_of_list([header, data[row]])),'\n'
-        ret = {}
+            self.str_list_of_list([header, data[row]])), '\n'
+        ret = OrderedDict()
         row_processed = 1
         while col < len(header):
+
             key, sub_path, remaining_path = self._get_key_path(header[col], path)
+            # print '='*80
             # print 'header[col]',header[col]
             # print 'key',key
             # print 'sub_path',sub_path
             # print 'path',path
             # print 'remaining_path',remaining_path
+            # print '='*80
 
             if not header[col].startswith(path):
-                return ret, row_processed, col
+                col -= 1;
+                break
+
+            elif header[col].endswith(self._list_postfix):
+                value, _row_processed, col = self._unflatten_list(header, data, row, col, sub_path)
+                row_processed *= _row_processed
+                ret[key] = value
 
             elif self.path_deliminator in remaining_path:
                 value, _row_processed, col = self._unflatten_dict(header, data, row, col, sub_path)
                 row_processed *= _row_processed
                 ret[key] = value
 
-            elif header[col].endswith(self._list_postfix):
-                value, _row_processed, col = self._unflatten_list(header, data, row, col, sub_path)
-                row_processed *= _row_processed
-                ret[key] = value
             else:
                 ret[key] = data[row][col]
 
             col += 1
-        print 'Done with Unflatten_List', 'row_processed = ', row_processed, '_col = ', col, '\n', ret,'\n'
+        print 'Done with Unflatten_Dict', 'row_processed = ', row_processed, '_col = ', col, '\n', ret, '\n'
         return ret, row_processed, col
 
     def _unflatten_list(self, header, data, row, col, path):
@@ -277,7 +296,7 @@ class JsonTable(object):
         if path.startswith(self.path_deliminator):
             path = path.split(self.path_deliminator, 1)[-1]
         print 'Unflatten_List', 'path = "%s"' % path, 'row = ', row, 'col = ', col, '\n', str(
-            self.str_list_of_list([header, data[row]])),'\n'
+            self.str_list_of_list([header, data[row]])), '\n'
         ret = []
         _row = row
         _col = col
@@ -309,7 +328,10 @@ class JsonTable(object):
 
                 _col += 1
             _row += row_processed
-        print 'Done with Unflatten_List', 'row_processed = ', _row - row, '_col = ', _col, '\n', ret,'\n'
+
+        # print '_row = ',_row < len(data)
+        # print 'key_value = ',data[_row][col] == key_value
+        print 'Done with Unflatten_List', 'row_processed = ', _row - row, '_col = ', _col, '\n', ret, '\n'
         return ret, _row - row, _col
 
     def _flatten(self, obj, level, path):
@@ -349,7 +371,7 @@ class JsonTable(object):
         :param path:
         :return:
         """
-        print 'Flatten_Dict', level, path,'\n', obj,'\n'
+        print 'Flatten_Dict', level, path, '\n', obj, '\n'
         # print self.table_str(self.csv_data)
         items = (getattr(obj, 'items', None) or obj.__dict__.items)()
         cols = []
@@ -381,7 +403,7 @@ class JsonTable(object):
         :param path:
         :return:
         """
-        print 'Flatten_List', 'level = ',level,'path = ', path, '\n',obj,'\n'
+        print 'Flatten_List', 'level = ', level, 'path = ', path, '\n', obj, '\n'
         # print self.table_str(self.csv_data)
         list_label = self._get_list_label(path)
         cols = [path + self._list_postfix]
@@ -413,7 +435,7 @@ class JsonTable(object):
         if path: path += self.path_deliminator
         remaining_path = column[len(path):].replace(self._list_postfix, '')
         key = remaining_path.split(self.path_deliminator)[0]
-        sub_path = path and (path + self.path_deliminator + key) or key
+        sub_path = path and (path + key) or key
         return key, sub_path, remaining_path
 
     def _get_list_label(self, path):
@@ -629,6 +651,33 @@ class JsonTable(object):
         """
         return self.unflatten_csv([self.csv_data[0], [value] * len(self.csv_data[0])])
 
+    def normalize_data(self, json_data=None):
+        """
+        None and '' are considered as null characters and therefore won't show up in the results
+        True and False will be converted to 1 and 0
+
+        Note objects embedded with themselves will stack overflow
+        :param json_data:
+        :return:
+        """
+        json_data = json_data or self.json_data
+        self._normalize_data(json_data)
+        return json_data
+
+    def _normalize_data(self, obj):
+        if isinstance(obj, dict) or getattr(obj, 'items', None) or getattr(obj, '__dict__', None):
+            items = obj.items()
+            for k, v in items:
+                if v is None or v is '': obj.pop(k)
+                if v is True: obj[k] = 1
+                if v is False: obj[k] = 0
+
+        elif isinstance(obj, list) or getattr(obj, '__iter__', None):
+            for i in xrange(len(obj) - 1, -1, -1):
+                if obj[i] is None or obj[i] is '': obj.remove(obj[i])
+                elif obj[i] is True: obj[i] = 1
+                elif obj[i] is False: obj[i] = 0
+                else: self._normalize_data(obj[i])
 
     def __repr__(self):
         """
@@ -650,9 +699,10 @@ class SubTemplate(object):
         self.text = text
 
 
+if __name__ == '__main__':
+    import sys, pytest
 
-
-
+    sys.exit(pytest.main(['json_table_test.py'] + sys.argv[3:]))
 
 
 

@@ -1,63 +1,63 @@
 {
-    "path": "/aaa/authenticate",
-    "operations": [
+  "path": "/aaa/authenticate",
+  "operations": [
+    {
+      "method": "POST",
+      "summary": "Login Step 1: Authenticate with user credentials",
+      "notes": "Login is a 2 step process:  Authenticate, then Authorize with the token returned by Authenticate.",
+      "nickname": "authenticate",
+      "type": "AuthenticateToken",
+      "parameters": [
         {
-            "method": "POST",
-            "summary": "Login Step 1: Authenticate with user credentials",
-            "notes": "Login is a 2 step process:  Authenticate, then Authorize with the token returned by Authenticate.",
-            "nickname": "authenticate",
-            "type": "AuthenticateToken",
-            "parameters": [
-                {
-                    "name": "username",
-                    "description": "Username",
-                    "required": true,
-                    "type": "string",
-                    "paramType": "form"
-                },
-                {
-                    "name": "password",
-                    "description": "Password",
-                    "required": true,
-                    "type": "string",
-                    "paramType": "form"
-                }
-            ],
-            "responseMessages": [
-                {
-                    "code": 400,
-                    "message": "Some argument(s) are missing or invalid"
-                },
-                {
-                    "code": 401,
-                    "message": "Supplied credentials are not valid"
-                },
-                {
-                    "code": 402,
-                    "message": "Account is suspended"
-                },
-                {
-                    "code": 460,
-                    "message": "Account is inactive"
-                },
-                {
-                    "code": 461,
-                    "message": "Account is pending"
-                },
-                {
-                    "code": 412,
-                    "message": "User is disabled"
-                },
-                {
-                    "code": 462,
-                    "message": "User is pending. This will be thrown before 401 if username is valid and Account is active."
-                },
-                {
-                    "code": 200,
-                    "message": "User has been authenticated. Body contains JSON encoded result"
-                }
-            ]
+          "name": "username",
+          "description": "Username",
+          "required": true,
+          "type": "string",
+          "paramType": "form"
+        },
+        {
+          "name": "password",
+          "description": "Password",
+          "required": true,
+          "type": "string",
+          "paramType": "form"
         }
-    ]
+      ],
+      "responseMessages": [
+        {
+          "code": 400,
+          "message": "Some argument(s) are missing or invalid"
+        },
+        {
+          "code": 401,
+          "message": "Supplied credentials are not valid"
+        },
+        {
+          "code": 402,
+          "message": "Account is suspended"
+        },
+        {
+          "code": 460,
+          "message": "Account is inactive"
+        },
+        {
+          "code": 461,
+          "message": "Account is pending"
+        },
+        {
+          "code": 412,
+          "message": "User is disabled"
+        },
+        {
+          "code": 462,
+          "message": "User is pending. This will be thrown before 401 if username is valid and Account is active."
+        },
+        {
+          "code": 200,
+          "message": "User has been authenticated. Body contains JSON encoded result"
+        }
+      ]
+    }
+  ]
 }
 
