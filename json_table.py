@@ -36,7 +36,7 @@ import simple_xls
 
 class JsonTable(object):
     _list_head = 'LIST'
-    _list_postfix = '[...]'
+    _list_postfix = '[:]'
 
     def __init__(self, json_data=None, csv_data=None, col_map=None, path_deliminator='.', csv_deliminator=','):
         """
@@ -116,9 +116,9 @@ class JsonTable(object):
 
         self.csv_data = simple_xls.read_csv(filename)
         # with open(filename, 'r') as fn:
-        #     self.csv_data = [row for row in
+        # self.csv_data = [row for row in
         #                      csv.reader(fn, delimiter=self.csv_deliminator, quoting=csv.QUOTE_MINIMAL)]
-        print 'Load CSV File ' + filename + '\n' + self.str_list_of_list(self.csv_data),'\n'
+        print 'Load CSV File ' + filename + '\n' + self.str_list_of_list(self.csv_data), '\n'
         self.load_csv_data(self.csv_data, path_deliminator=path_deliminator, csv_deliminator=csv_deliminator)
 
     def load_csv_data(self, csv_data, path_deliminator=None, csv_deliminator=None):
@@ -186,8 +186,8 @@ class JsonTable(object):
         csv_deliminator = csv_deliminator or self.csv_deliminator
         keys = keys or col_map
         csv_data = csv_data or self.get_value_set(keys=keys, col_map=col_map)
-        print 'Saving CSV file','\n', self.str_list_of_list(csv_data),'\n'
-        simple_xls.write_csv(filename,csv_data)
+        print 'Saving CSV file', '\n', self.str_list_of_list(csv_data), '\n'
+        simple_xls.write_csv(filename, csv_data)
 
     def save_json_file(self, filename, json_data=None, indent=2):
         """
@@ -198,6 +198,148 @@ class JsonTable(object):
         json_data = json_data or self.json_data
         with open(filename, 'w') as fn:
             fn.write(simplejson.dumps(json_data, indent=indent))
+
+    def unflatten_csv(self, data, path_deliminator=None):
+        """
+        :param data:
+        :param path_deliminator:
+        :return:
+        """
+        self.path_deliminator = path_deliminator or self.path_deliminator
+        self._list_label.clear()
+
+        header = data[0]
+        if header[0].startswith(self._list_postfix):
+            ret, row, col = self._unflatten_list(header, data, row=1, col=0, path='.', level=1)
+        elif len(header) == 1 and header[0] == '' and len(data) == 2:
+            ret, row = data[1][0], 1
+        else:
+            ret, row, col = self._unflatten_dict(header, data, row=1, col=0, path='', level=0)
+
+        print 'Done unflatten CSV', '\n', str(ret), '\n'
+        assert (row + 1 == len(data))
+        ret = self.normalize_data(ret)
+        return ret
+
+    def _unflatten_dict(self, header, data, row, col, path, level):
+        """
+        :param header:
+        :param data:
+        :param row:
+        :param path:
+        :return: tuple of (dict of data, int of row_processed, int of col))
+        """
+        print 'Unflatten_Dict', 'path = "%s"' % path, 'row = ', row, 'col = ', col, 'level = ', level, '\n', str(
+            self.str_list_of_list([header, data[row]])), '\n'
+        ret = OrderedDict()
+        row_processed = 1
+        while col < len(header):
+
+            key, sub_path, remaining_path = self._get_key_path(header[col], path, level)
+            # print '='*80
+            # print 'header[col]',header[col]
+            # print 'key',key
+            # print 'sub_path',sub_path
+            # print 'path',path
+            # print 'remaining_path',remaining_path
+            # print '='*80
+            if key == None:
+                col -= 1
+                break
+
+            elif key.endswith(self._list_postfix):
+                value, _row_processed, col = self._unflatten_list(header, data, row, col, sub_path, level + 1)
+                row_processed *= _row_processed
+                ret[key.replace(self._list_postfix, '')] = value
+
+            elif self.path_deliminator in remaining_path:
+                value, _row_processed, col = self._unflatten_dict(header, data, row, col, sub_path, level + 1)
+                row_processed *= _row_processed
+                if value is not None:
+                    if key in ret:
+                        value[''] = ret[key]
+                    ret[key] = value
+
+            else:
+                print 'KEY = ', key, data[row][col]
+                ret[key] = data[row][col]
+
+            col += 1
+        print 'Done with Unflatten_Dict', 'row_processed = ', row_processed, '_col = ', col, 'level = ', level, '\n', ret, '\n'
+        return ret, row_processed, col
+
+    def _unflatten_list(self, header, data, row, col, path, level):
+        """
+        :param header:
+        :param data:
+        :param row:
+        :param path:
+        :return: tuple of (dict of data, int of row_processed, int of col)
+        :rtype : tuple
+        """
+        print 'Unflatten_List', 'path = "%s"' % path, 'row = ', row, 'col = ', col, 'level = ', level, '\n', str(
+            self.str_list_of_list([header, data[row]])), '\n'
+        ret = []
+        _row = row
+        _col = col
+        key_value = data[row][col]  # this will tell when enough rows have been gathered
+        if key_value is None: # this list is empty so move on
+            for _col in range(col+2, len(header)):
+                if header[_col] != path and not header[_col].startswith(path+self.path_deliminator):
+                    return None, 1, _col - 1
+            return None, 1, _col
+
+        while _row < len(data) and data[_row][col] == key_value:
+            _col = col + 1
+            embedded_rows_processed = 1
+
+            while _col < len(header):
+                print 'row = ',_row,'col = ',_col
+                key, sub_path, remaining_path = self._get_key_path(header[_col], path, level)
+                # print 'header = ', header[_col:]
+                # print 'key = ',key
+                # print 'sub_path = ',sub_path
+                # print 'remaining_path = ', remaining_path
+                # print 'path = ',path
+                if key == None:  # we are done with this embedded object
+                    _col -= 1
+                    break
+
+                elif key.endswith(self._list_postfix):
+                    value, _row_processed, _col = self._unflatten_list(header, data, _row, _col, sub_path, level + 1)
+                    print 'value',value,'col',_col,'_row_processed',_row_processed
+                    embedded_rows_processed *= _row_processed
+                    self._add_value_to_list(ret, value)
+
+                elif remaining_path:
+                    value, _row_processed, _col = self._unflatten_dict(header, data, _row, _col, sub_path, level + 1)
+                    embedded_rows_processed = _row_processed
+                    self._add_value_to_list(ret, value)
+
+                else:
+                    ret.append(data[_row][_col])
+
+                _col += 1
+            _row += embedded_rows_processed
+
+        # print '_row = ',_row < len(data)
+        # print 'key_value = ',data[_row][col] == key_value
+        print 'Done with Unflatten_List', 'row_processed = ', _row - row, '_col = ', _col, 'level = ', level, '\n', ret, '\n'
+        return ret, _row - row, _col
+
+    def _add_value_to_list(self, ret, value):
+        value = self.normalize_data(value)
+        if not value: return
+        print ret
+        if ret == []:
+            ret.append(value)
+        elif ret[-1] is None:
+            ret[-1] = value
+        elif isinstance(ret[-1], dict) or isinstance(ret[-1], list):
+            ret.append(value)
+        else:
+            value[''] = ret[-1]
+            ret[-1] = value
 
     def flatten_json(self, obj, path_deliminator=None):
         """
@@ -211,149 +353,6 @@ class JsonTable(object):
         print 'Done flatten Json', '\n', self.str_list_of_list(self.csv_data), '\n'
         return self.csv_data
 
-    def unflatten_csv(self, data, path_deliminator=None):
-        """
-        :param data:
-        :param path_deliminator:
-        :return:
-        """
-        self.path_deliminator = path_deliminator or self.path_deliminator
-        self._list_label.clear()
-
-        header = data[0]
-        if header[0].startswith(self._list_postfix):
-            ret, row, col = self._unflatten_list(header, data, row=1, col=0, path='')
-        elif len(header) == 1 and header[0] == '' and len(data) == 2:
-            ret, row = data[1][0], 1
-        else:
-            ret, row, col = self._unflatten_dict(header, data, row=1, col=0, path='')
-
-        print 'Done unflatten CSV', '\n', str(ret), '\n'
-        assert (row + 1 == len(data))
-        ret = self.normalize_data(ret)
-        return ret
-
-    def _unflatten_dict(self, header, data, row, col, path):
-        """
-        :param header:
-        :param data:
-        :param row:
-        :param path:
-        :return: tuple of (dict of data, int of row_processed, int of col))
-        """
-        if path.startswith(self.path_deliminator):
-            path = path.split(self.path_deliminator, 1)[-1]
-        print 'Unflatten_Dict', 'path = "%s"' % path, 'row = ', row, 'col = ', col, '\n', str(
-            self.str_list_of_list([header, data[row]])), '\n'
-        ret = OrderedDict()
-        row_processed = 1
-        while col < len(header):
-
-            key, sub_path, remaining_path = self._get_key_path(header[col], path)
-            # print '='*80
-            # print 'header[col]',header[col]
-            # print 'key',key
-            # print 'sub_path',sub_path
-            # print 'path',path
-            # print 'remaining_path',remaining_path
-            # print '='*80
-
-            if not header[col].startswith(path):
-                col -= 1
-                break
-
-            elif header[col].endswith(self._list_postfix):
-                value, _row_processed, col = self._unflatten_list(header, data, row, col, sub_path)
-                row_processed *= _row_processed
-                ret[key] = value
-
-            elif self.path_deliminator in remaining_path:
-                value, _row_processed, col = self._unflatten_dict(header, data, row, col, sub_path)
-                row_processed *= _row_processed
-                if key in ret:
-                    value[''] = ret[key]
-                ret[key] = value
-
-            else:
-                print 'key = ',key,data[row][col]
-                ret[key] = data[row][col]
-
-            col += 1
-        print 'Done with Unflatten_Dict', 'row_processed = ', row_processed, '_col = ', col, '\n', ret, '\n'
-        return ret, row_processed, col
-
-    def _unflatten_list(self, header, data, row, col, path):
-        """
-        :param header:
-        :param data:
-        :param row:
-        :param path:
-        :return: tuple of (dict of data, int of row_processed, int of col)
-        :rtype : tuple
-        """
-        if path.startswith(self.path_deliminator):
-            path = path.split(self.path_deliminator, 1)[-1]
-        print 'Unflatten_List', 'path = "%s"' % path, 'row = ', row, 'col = ', col, '\n', str(
-            self.str_list_of_list([header, data[row]])), '\n'
-        ret = []
-        _row = row
-        _col = col
-        key_value = data[row][col]
-
-        while _row < len(data) and data[_row][col] == key_value:
-            _col = col + 1
-            row_processed = 1
-
-            while _col < len(header):
-                key, sub_path, remaining_path = self._get_key_path(header[_col], path)
-                # print 'header',header
-                # print 'header[_col]',header[_col]
-                # print '_col',_col
-                # print '_row',_row
-                # print 'key',key
-                # print 'path',path
-                # print 'sub_path',sub_path
-                # print 'remaining_path',remaining_path
-
-                if not header[_col].startswith(path):
-                    _col -= 1
-                    break
-
-                elif header[_col].endswith(self._list_postfix):  # list within a list
-                    value, _row_processed, _col = self._unflatten_list(header, data, _row, _col, sub_path)
-                    row_processed *= _row_processed
-                    self._add_value_to_list(ret,value)
-
-                elif key:
-                    value, _row_processed, _col = self._unflatten_dict(header, data, _row, _col, path)
-                    row_processed = _row_processed
-                    self._add_value_to_list(ret,value)
-
-                else:
-                    ret.append(data[_row][_col])
-
-                _col += 1
-            _row += row_processed
-
-        # print '_row = ',_row < len(data)
-        # print 'key_value = ',data[_row][col] == key_value
-        print 'Done with Unflatten_List', 'row_processed = ', _row - row, '_col = ', _col, '\n', ret, '\n'
-        return ret, _row - row, _col
-
-    def _add_value_to_list(self,ret,value):
-        value = self.normalize_data(value)
-        if not value: return
-
-        if ret == []:
-            ret.append(value)
-        elif ret[-1] == None:
-            ret[-1] = value
-        elif isinstance(ret[-1],dict) or isinstance(ret[-1],list):
-            ret.append(value)
-        else:
-            value[''] = ret[-1]
-            ret[-1] = value
-
     def _flatten(self, obj, level, path):
         """
 
@@ -362,9 +361,6 @@ class JsonTable(object):
         :param path:
         :return:
         """
-        if path.startswith(self.path_deliminator):
-            path = path.split(self.path_deliminator, 1)[-1]
-
         if isinstance(obj, dict):
             ret = self._flatten_dict(obj, level, path)
         elif isinstance(obj, list):
@@ -397,18 +393,22 @@ class JsonTable(object):
         cols = []
         data = [[]]
         for k, v in items:
-            _col, _data = self._flatten(v, level + 1, path + self.path_deliminator + k)
-            # print '_col',_col
-            # print 'cols',cols
-            # print '_data',_data
+            if path:
+                _col, _data = self._flatten(v, level + 1, path + self.path_deliminator + k)
+            else:
+                _col, _data = self._flatten(v, level + 1, k)
+
+            print '_col', _col
+            print 'cols', cols
+            print '_data', _data
             cols += _col
             if len(_data) == 1:
                 for row in data:  # noinspection PyUnusedLocal
                     row += _data[0]
             else:
                 new_data = []
-                for new_row in _data or [[]]:
-                    for old_row in data:
+                for old_row in data:
+                    for new_row in _data or [[]]:
                         new_data.append(old_row + new_row)
                 data = new_data
                 # print 'cols',cols
@@ -428,12 +428,13 @@ class JsonTable(object):
         list_label = self._get_list_label(path)
         cols = [path + self._list_postfix]
         data = []
-        for row in obj:
-            _col, _data = self._flatten(row, level + 1, path)
-            # print 'data',_data
-            # print 'col',_col
-            # print 'cols',cols
 
+        for row in obj:
+            print 'path = ', path, obj, path + self.path_deliminator
+            _col, _data = self._flatten(row, level + 1, path + self.path_deliminator)
+            # print 'data',_data
+            print '_col', _col
+            print 'cols', cols
             if cols[1:] == _col and len(data) == 1:
                 data.append([list_label] + _data[0])
                 # print 'data1',data[-1]
@@ -451,16 +452,22 @@ class JsonTable(object):
                     data.append(new_row)
         return cols, data
 
-    def _get_key_path(self, column, path):
+    def _get_key_path(self, column, path, level):
         """
         :param column: str of current header column
         :param path: str of the current path
-        :return: tuple of next key and next path and remaining path
+        :return: tuple of
+            next key
+            next path
+            remaining path
         """
-        if path: path += self.path_deliminator
-        remaining_path = column[len(path):].replace(self._list_postfix, '')
-        key = remaining_path.split(self.path_deliminator)[0]
-        sub_path = path and (path + key) or key
+        # print 'column = ',column,' path = ',path,' level = ',level
+        assert (path.count(self.path_deliminator) == level)
+        if not column.startswith(path):
+            return None, None, None,
+        remaining_path = column[len(path):]
+        key = column[len(path):].split(self.path_deliminator)[0]
+        sub_path = path + key.replace(self._list_postfix, '') + self.path_deliminator
         return key, sub_path, remaining_path
 
     def _get_list_label(self, path):
@@ -709,7 +716,7 @@ class JsonTable(object):
                     self._normalize_data(obj[i])
                     if obj[i] == [] or obj[i] == {}:
                         obj.pop(i)
-        # print 'obj exit = ',simplejson.dumps(obj)
+                        # print 'obj exit = ',simplejson.dumps(obj)
 
     def __repr__(self):
         """
@@ -733,6 +740,7 @@ class SubTemplate(object):
 
 if __name__ == '__main__':
     import sys, pytest
+
     sys.exit(pytest.main(['json_table_test.py'] + sys.argv[3:]))
 
 

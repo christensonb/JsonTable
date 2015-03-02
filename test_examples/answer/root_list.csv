@@ -1,0 +1,8 @@
+  "ROOT[:]", "ROOT.", "ROOT..a", "ROOT..b", "ROOT..c"
+ "LIST_0_0",     "1",          ,          ,          
+ "LIST_0_0",     "2",          ,          ,          
+ "LIST_0_0",     "3",          ,          ,          
+ "LIST_0_0",        ,       "A",          ,          
+ "LIST_0_0",        ,          ,       "B",          
+ "LIST_0_0",        ,          ,          ,       "C"
+ "LIST_0_0",        ,      "AA",      "BB",      "CC"

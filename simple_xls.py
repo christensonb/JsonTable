@@ -24,15 +24,24 @@ def read_csv(filename,deliminator=','):
                     ret[-1].append(cell)
     return ret
 
-def write_csv(filename,data,deliminator=','):
+def write_csv(filename,data,deliminator=',',space_column=True):
     """ This will write a list of list to a csv file
     :param filename: str of the file name
     :param data: list of list of objects
     :param deliminator:
     :return: None
     """
+    str_data = [[xls_safe_str(cell) for cell in row] for row in data]
+    if space_column:
+        widths = []
+        for col in range(len(str_data[0])):
+            widths.append(max([len(row[col]) for row in str_data]))
+        str_data = [deliminator.join([row[c].rjust(widths[c]+1) for c in range(len(str_data[0]))]) for row in str_data]
+    else:
+        str_data = [deliminator.join(row) for row in str_data]
+
     with open(filename,'w') as fn:
-        fn.write('\n'.join([deliminator.join([xls_safe_str(cell) for cell in row]) for row in data]))
+        fn.write('\n'.join(str_data))
 
 def xls_safe_str(cell):
     """
@@ -48,4 +57,27 @@ def xls_safe_str(cell):
         ret = ret.replace('"',"'")
         ret = ret.replace('~~~TEMP~~~','"')
     return ret
+
+def str_list_of_list(obj,deliminator=','):
+    """
+    This will return the list of list as an evenly spaced columns
+    :param obj:
+    :return:
+    """
+    try:
+        if not obj: return str(obj)
+        size = len(obj[0])
+
+        data = []
+        for row in obj:
+            data.append([repr(r) for r in row])
+
+        widths = []
+        for col in range(size):
+            widths.append(max([len(row[col]) for row in data]))
+
+        ret = [','.join([data[r][c].rjust(widths[c] + 1) for c in range(size)]) for r in range(len(data))]
+        return '[[' + ' ]\n ['.join(ret) + ' ]]'
+    except Exception as e:
+        raise e
 
