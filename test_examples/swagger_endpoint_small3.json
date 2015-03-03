@@ -1,0 +1,62 @@
+{
+  "path": "path",
+  "o": [
+    {
+      "method": "POST",
+      "summary": "Log",
+      "notes": "Log",
+      "nickname": "n",
+      "type": "t",
+      "p": [
+        {
+          "name": "name",
+          "d": "desc",
+          "r": true,
+          "type": "str",
+          "pt": "form"
+        },
+        {
+          "name": "pass",
+          "d": "Pass",
+          "r": true,
+          "type": "str",
+          "pt": "form"
+        }
+      ],
+      "r": [
+        {
+          "c": 400,
+          "m": "Some"
+        },
+        {
+          "c": 401,
+          "m": "Some2"
+        },
+        {
+          "c": 402,
+          "m": "Some3"
+        },
+        {
+          "c": 403,
+          "m": "Some4"
+        },
+        {
+          "c": 404,
+          "m": "Some5"
+        },
+        {
+          "c": 405,
+          "m": "Some6"
+        },
+        {
+          "c": 406,
+          "m": "Some7"
+        },
+        {
+          "c": 407,
+          "m": "Some8"
+        }
+      ]
+    }
+  ]
+}

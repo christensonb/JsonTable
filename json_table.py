@@ -217,7 +217,7 @@ class JsonTable(object):
         elif len(header) == 1 and header[0] == '' and len(data) == 2:
             ret, row = data[1][0], 1
         else:
-            ret, row, col = self._unflatten_dict(header, data, row=1, _col=0, path='', level=0)
+            ret, row, col = self._unflatten_dict(header, data, row=1, col=0, path='', level=0)
 
         # print 'Final test', row + 1, len(data)
         # print 'Done unflatten CSV', '\n', str(ret), '\n'
@@ -305,16 +305,18 @@ class JsonTable(object):
                 key, sub_path, remaining_path = self._get_key_path(header[_col], path, level)
                 if key == None:  # we are done with this embedded object
                     rows_processed = self._get_rows_processed_later(header,data,_row,_col)
+                    print 'rows_processed_later',rows_processed,_row,_col
                     _col -= 1
                     break
 
                 elif key.endswith(self._list_postfix):
                     value, rows_processed, _col = self._unflatten_list(header, data, _row, _col, sub_path, level + 1)
-                    # print 'value',value,'col',_col,'_row_processed',rows_processed
+                    print 'value',value,'col',_col,'_row_processed',rows_processed
                     self._add_value_to_list(ret, value)
 
                 elif remaining_path:
                     value, rows_processed, _col = self._unflatten_dict(header, data, _row, _col, sub_path, level + 1)
+                    print 'rows_processed',rows_processed
                     self._add_value_to_list(ret, value)
 
                 else:
@@ -322,7 +324,7 @@ class JsonTable(object):
 
                 if _col == len(header): break
                 _col += 1
-            # print 'level',level,'_row = ',_row,'rows_processed = ',rows_processed,'total = ',_row+rows_processed
+            print 'level',level,'_row = ',_row,'rows_processed = ',rows_processed,'total = ',_row+rows_processed
             _row += rows_processed or 1
             assert _row <= len(data)
 
@@ -348,7 +350,7 @@ class JsonTable(object):
                 for _row in range(row,len(data)):
                     if data[_row][_col] != key_value:
                         return _row - row or 1
-                return _row - row or 1
+                return _row - row + 1 or 1
         return 1
 
     def _add_value_to_list(self, ret, value):

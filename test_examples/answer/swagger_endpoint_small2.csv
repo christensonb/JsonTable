@@ -1,3 +1,3 @@
-"path",     "o[:]", "o..method", "o..summary", "o..notes", "o..nickname", "o..type",  "o..p[:]", "o..p..name", "o..p..d", "o..p..r", "o..p..type", "o..p..pt",  "o..r[:]", "o..r..c", "o..r..m"
-"path", "LIST_0_0",      "POST",        "Log",      "Log",           "n",       "t", "LIST_1_0",       "name",    "desc",      True,        "str",     "form", "LIST_2_0",       400,    "Some"
-"path", "LIST_0_0",      "POST",        "Log",      "Log",           "n",       "t", "LIST_1_0",       "pass",    "Pass",      True,        "str",     "form", "LIST_2_0",       400,    "Some"
+"path",  "o[:]", "o..method", "o..summary", "o..notes", "o..nickname", "o..type", "o..p[:]", "o..p..name", "o..p..d", "o..p..r", "o..p..type", "o..p..pt", "o..r[:]", "o..r..c", "o..r..m"
+"path", "0_0_0",      "POST",        "Log",      "Log",           "n",       "t",   "1_0_0",       "name",    "desc",      True,        "str",     "form",   "2_0_0",       400,    "Some"
+"path", "0_0_0",      "POST",        "Log",      "Log",           "n",       "t",   "1_0_0",       "pass",    "Pass",      True,        "str",     "form",   "2_0_1",       400,    "Some"

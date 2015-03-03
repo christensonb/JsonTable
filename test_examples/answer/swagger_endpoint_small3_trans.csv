@@ -1,0 +1,16 @@
+"path","path","path","path","path","path","path","path","path","path","path","path","path","path","path","path","path"
+"o[:]","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0","0_0_0"
+"o..method","POST","POST","POST","POST","POST","POST","POST","POST","POST","POST","POST","POST","POST","POST","POST","POST"
+"o..summary","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log"
+"o..notes","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log","Log"
+"o..nickname","n","n","n","n","n","n","n","n","n","n","n","n","n","n","n","n"
+"o..type","t","t","t","t","t","t","t","t","t","t","t","t","t","t","t","t"
+"o..p[:]","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0","1_0_0"
+"o..p..name","name","name","name","name","name","name","name","name","pass","pass","pass","pass","pass","pass","pass","pass"
+"o..p..d","desc","desc","desc","desc","desc","desc","desc","desc","Pass","Pass","Pass","Pass","Pass","Pass","Pass","Pass"
+"o..p..r",True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True
+"o..p..type","str","str","str","str","str","str","str","str","str","str","str","str","str","str","str","str"
+"o..p..pt","form","form","form","form","form","form","form","form","form","form","form","form","form","form","form","form"
+"o..r[:]","2_0_0","2_0_0","2_0_0","2_0_0","2_0_0","2_0_0","2_0_0","2_0_0","2_0_1","2_0_1","2_0_1","2_0_1","2_0_1","2_0_1","2_0_1","2_0_1"
+"o..r..c",400,401,402,403,404,405,406,407,400,401,402,403,404,405,406,407
+"o..r..m","Some","Some2","Some3","Some4","Some5","Some6","Some7","Some8","Some","Some2","Some3","Some4","Some5","Some6","Some7","Some8"

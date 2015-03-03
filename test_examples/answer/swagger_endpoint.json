@@ -4,187 +4,57 @@
     {
       "method": "POST",
       "summary": "Login Step 1: Authenticate with user credentials",
-      "notes": " \"Login is a 2 step process:  Authenticate",
-      "nickname": " then Authorize with the token returned by Authenticate.\"",
-      "type": "authenticate",
+      "notes": "Login is a 2 step process:  Authenticate, then Authorize with the token returned by Authenticate.",
+      "nickname": "authenticate",
+      "type": "AuthenticateToken",
       "parameters": [
         {
-          "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
-          "type": true,
-          "paramType": "string"
+          "name": "username",
+          "description": "Username",
+          "required": true,
+          "type": "string",
+          "paramType": "form"
         },
         {
-          "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "password",
-          "required": "Password",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "password",
-          "required": "Password",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "password",
-          "required": "Password",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "password",
-          "required": "Password",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "password",
-          "required": "Password",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "password",
-          "required": "Password",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "password",
-          "required": "Password",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "password",
-          "required": "Password",
-          "type": true,
-          "paramType": "string"
+          "name": "password",
+          "description": "Password",
+          "required": true,
+          "type": "string",
+          "paramType": "form"
         }
       ],
       "responseMessages": [
         {
-          "code": "LIST_2_0",
-          "message": 400
+          "code": 400,
+          "message": "Some argument(s) are missing or invalid"
         },
         {
-          "code": "LIST_2_0",
-          "message": 401
+          "code": 401,
+          "message": "Supplied credentials are not valid"
         },
         {
-          "code": "LIST_2_0",
-          "message": 402
+          "code": 402,
+          "message": "Account is suspended"
         },
         {
-          "code": "LIST_2_0",
-          "message": 460
+          "code": 460,
+          "message": "Account is inactive"
         },
         {
-          "code": "LIST_2_0",
-          "message": 461
+          "code": 461,
+          "message": "Account is pending"
         },
         {
-          "code": "LIST_2_0",
-          "message": 412
+          "code": 412,
+          "message": "User is disabled"
         },
         {
-          "code": "LIST_2_0",
-          "message": 462
+          "code": 462,
+          "message": "User is pending. This will be thrown before 401 if username is valid and Account is active."
         },
         {
-          "code": "LIST_2_0",
-          "message": 200
-        },
-        {
-          "code": "LIST_2_0",
-          "message": 400
-        },
-        {
-          "code": "LIST_2_0",
-          "message": 401
-        },
-        {
-          "code": "LIST_2_0",
-          "message": 402
-        },
-        {
-          "code": "LIST_2_0",
-          "message": 460
-        },
-        {
-          "code": "LIST_2_0",
-          "message": 461
-        },
-        {
-          "code": "LIST_2_0",
-          "message": 412
-        },
-        {
-          "code": "LIST_2_0",
-          "message": 462
-        },
-        {
-          "code": "LIST_2_0",
-          "message": 200
+          "code": 200,
+          "message": "User has been authenticated. Body contains JSON encoded result"
         }
       ]
     }

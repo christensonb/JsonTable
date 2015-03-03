@@ -14,14 +14,18 @@ def read_csv(filename,deliminator=',',transpose=False):
     ret = []
     for row in text.split('\n'):
         ret.append([])
-        for cell in row.split(deliminator):
+        cells = row.split(deliminator)
+        i = 0
+        while i < len(cells):
+            cell = cells[i]
             if cell.strip() == '':
                 ret[-1].append(None)
             else:
-                try:
-                    ret[-1].append(eval(cell,{},{}))
-                except:
-                    ret[-1].append(cell)
+                while cell.count('"')%2:
+                    cell += deliminator+cells.pop(i+1)
+                ret[-1].append(eval(cell,{},{}))
+            i += 1
+
     if transpose:
         trans_ret = []
         for i in range(len(ret[0])):
