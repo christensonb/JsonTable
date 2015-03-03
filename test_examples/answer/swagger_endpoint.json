@@ -4,7 +4,7 @@
     {
       "method": "POST",
       "summary": "Login Step 1: Authenticate with user credentials",
-      "notes": "\"Login is a 2 step process:  Authenticate",
+      "notes": " \"Login is a 2 step process:  Authenticate",
       "nickname": " then Authorize with the token returned by Authenticate.\"",
       "type": "authenticate",
       "parameters": [
@@ -17,8 +17,43 @@
         },
         {
           "name": "LIST_1_0",
-          "description": "password",
-          "required": "Password",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
+          "type": true,
+          "paramType": "string"
+        },
+        {
+          "name": "LIST_1_0",
+          "description": "username",
+          "required": "Username",
           "type": true,
           "paramType": "string"
         },
@@ -38,8 +73,8 @@
         },
         {
           "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
+          "description": "password",
+          "required": "Password",
           "type": true,
           "paramType": "string"
         },
@@ -52,8 +87,8 @@
         },
         {
           "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
+          "description": "password",
+          "required": "Password",
           "type": true,
           "paramType": "string"
         },
@@ -66,13 +101,6 @@
         },
         {
           "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
           "description": "password",
           "required": "Password",
           "type": true,
@@ -80,36 +108,8 @@
         },
         {
           "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
           "description": "password",
           "required": "Password",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "password",
-          "required": "Password",
-          "type": true,
-          "paramType": "string"
-        },
-        {
-          "name": "LIST_1_0",
-          "description": "username",
-          "required": "Username",
           "type": true,
           "paramType": "string"
         },
@@ -121,10 +121,72 @@
           "paramType": "string"
         }
       ],
-      "responseMessages": {
-        "code": "LIST_2_0",
-        "message": 400
-      }
+      "responseMessages": [
+        {
+          "code": "LIST_2_0",
+          "message": 400
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 401
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 402
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 460
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 461
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 412
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 462
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 200
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 400
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 401
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 402
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 460
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 461
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 412
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 462
+        },
+        {
+          "code": "LIST_2_0",
+          "message": 200
+        }
+      ]
     }
   ]
 }

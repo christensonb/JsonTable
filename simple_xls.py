@@ -3,7 +3,7 @@
     The builtin CSV module has problems with floats vs. int and with bools
 """
 
-def read_csv(filename,deliminator=','):
+def read_csv(filename,deliminator=',',transpose=False):
     """ This will read in a csv file, as excel would write it.
     :param filename: this
     :return: list of list of the data
@@ -22,21 +22,34 @@ def read_csv(filename,deliminator=','):
                     ret[-1].append(eval(cell,{},{}))
                 except:
                     ret[-1].append(cell)
+    if transpose:
+        trans_ret = []
+        for i in range(len(ret[0])):
+            trans_ret.append([ret[j][i] for j in range(len(ret))])
+        return trans_ret
     return ret
 
-def write_csv(filename,data,deliminator=',',space_column=True):
+def write_csv(filename,data,deliminator=',',space_column=None, transpose=False):
     """ This will write a list of list to a csv file
     :param filename: str of the file name
     :param data: list of list of objects
     :param deliminator:
     :return: None
     """
+    space_column = space_column or not transpose
     str_data = [[xls_safe_str(cell) for cell in row] for row in data]
+    if transpose:
+        str_data = []
+        for i in range(len(data[0])):
+            str_data.append([xls_safe_str(data[j][i]) for j in range(len(data))])
+    else:
+        str_data = [[xls_safe_str(cell) for cell in row] for row in data]
+
     if space_column:
         widths = []
         for col in range(len(str_data[0])):
             widths.append(max([len(row[col]) for row in str_data]))
-        str_data = [deliminator.join([row[c].rjust(widths[c]+1) for c in range(len(str_data[0]))]) for row in str_data]
+        str_data = [' '.join([(row[c]+deliminator).rjust(widths[c]+1) for c in range(len(str_data[0]))])[:-1] for row in str_data]
     else:
         str_data = [deliminator.join(row) for row in str_data]
 

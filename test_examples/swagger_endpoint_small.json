@@ -1,0 +1,27 @@
+{
+  "path": "/aaa/authenticate",
+  "operations": [
+    {
+      "method": "POST",
+      "summary": "Log",
+      "notes": "Log",
+      "nickname": "authenticate",
+      "type": "AuthenticateToken",
+      "parameters": [
+        {
+          "name": "password",
+          "description": "Password",
+          "required": true,
+          "type": "string",
+          "paramType": "form"
+        }
+      ],
+      "responseMessages": [
+        {
+          "code": 400,
+          "message": "Some argument(s) are missing or invalid"
+        }
+      ]
+    }
+  ]
+}
