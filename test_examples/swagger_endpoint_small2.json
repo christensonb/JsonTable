@@ -1,0 +1,34 @@
+{
+  "path": "path",
+  "o": [
+    {
+      "method": "POST",
+      "summary": "Log",
+      "notes": "Log",
+      "nickname": "n",
+      "type": "t",
+      "p": [
+        {
+          "name": "name",
+          "d": "desc",
+          "r": true,
+          "type": "str",
+          "pt": "form"
+        },
+        {
+          "name": "pass",
+          "d": "Pass",
+          "r": true,
+          "type": "str",
+          "pt": "form"
+        }
+      ],
+      "r": [
+        {
+          "c": 400,
+          "m": "Some"
+        }
+      ]
+    }
+  ]
+}

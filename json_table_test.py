@@ -50,12 +50,11 @@ def test_convert_example_file(filename):
         with open(new_file2, 'r') as test:
             original_text = original.read()
             test_text = test.read()
-            print original_text
-            print test_text
+            # print original_text
+            # print test_text
             assert (original_text == test_text)
 
 
 if __name__ == '__main__':
-    print sys.argv
     sys.exit(pytest.main(['json_table_test.py'] + sys.argv[3:]))
     # test_convert_example_file(examples[0])
